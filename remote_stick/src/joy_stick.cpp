@@ -29,7 +29,7 @@ using namespace std::chrono_literals;
 std::mutex mtx;
 int xbox_fd ;  
 xbox_map_t map;  
-int len, type;  
+int len;  
 bool joy_get_flag = true;
 std_msgs::msg::Float32MultiArray msg_out;
 
@@ -118,8 +118,7 @@ class JoyStickPublisher : public rclcpp::Node
     }
 
   private:
-    void timer_callback()
-    {
+    void timer_callback() {
       auto& clk = *this->get_clock();
 
       RCLCPP_INFO_THROTTLE(this->get_logger(),

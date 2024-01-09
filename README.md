@@ -10,4 +10,13 @@ Build the package as many else of ros2 package. The message is float32_multi_arr
 
 ros2 launch remote_stick joy_stick.launch.py  
 
+### Running the real-time debugger  
+
+Plotting the real states of the controller. You can run:  
+ros2 run plotjuggler plotjuggler    
+
+
+
+
+
 
