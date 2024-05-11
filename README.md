@@ -15,7 +15,9 @@ ros2 launch remote_stick joy_stick.launch.py
 Plotting the real states of the controller. You can run:  
 ros2 run plotjuggler plotjuggler    
 
+### Build 
 
+colcon build --symlink-install 
 
 
 
