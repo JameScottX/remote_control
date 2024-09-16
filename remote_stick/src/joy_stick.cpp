@@ -78,21 +78,32 @@ void joy_get(void) {
         
         mtx.lock();
 
-        msg_out.data[0] =  math_map((double)-map.lx, -32767.0 + GAP_CTL, 32767.0 - GAP_CTL, -1.0, 1.0);
-        msg_out.data[1] =  math_map((double)-map.ly, -32767.0 + GAP_CTL, 32767.0 - GAP_CTL, -1.0, 1.0);
-        msg_out.data[2] =  math_map((double)-map.rx, -32767.0 + GAP_CTL, 32767.0 - GAP_CTL, -1.0, 1.0);
-        msg_out.data[3] =  math_map((double)-map.ry, -32767.0 + GAP_CTL, 32767.0 - GAP_CTL, -1.0, 1.0);
-        msg_out.data[4] =  math_map((double)map.lt, -32767.0 + GAP_CTL, 32767.0 - GAP_CTL, 0.0, 1.0);
-        msg_out.data[5] =  math_map((double)map.rt, -32767.0 + GAP_CTL, 32767.0 - GAP_CTL, 0.0, 1.0);
-        msg_out.data[6] =  math_map((double)map.lb, 0, 1, 0.0, 1.0);
-        msg_out.data[7] =  math_map((double)map.rb, 0, 1, 0.0, 1.0);
 
-        msg_out.data[8] =  math_map((double)map.a, 0, 1, 0.0, 1.0);
-        msg_out.data[9] =  math_map((double)map.b, 0, 1, 0.0, 1.0);
-        msg_out.data[10] =  math_map((double)map.x, 0, 1, 0.0, 1.0);
-        msg_out.data[11] =  math_map((double)map.y, 0, 1, 0.0, 1.0);
-        msg_out.data[12] =  math_map((double)map.start, 0, 1, 0.0, 1.0);
-        msg_out.data[13] =  math_map((double)map.back, 0, 1, 0.0, 1.0);
+        if (fabs(map.lx) < GAP_CTL) map.lx = 0.0;
+        if (fabs(map.ly) < GAP_CTL) map.ly = 0.0;
+        if (fabs(map.rx) < GAP_CTL) map.rx = 0.0;
+        if (fabs(map.ry) < GAP_CTL) map.ry = 0.0;
+
+        msg_out.data[0] =  math_map((double)-map.lx, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[1] =  math_map((double)-map.ly, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[2] =  math_map((double)-map.rx, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[3] =  math_map((double)-map.ry, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[4] =  math_map((double)map.lt, -32767.0 + GAP_CTL, 32767.0, 0.0, 1.0);
+        msg_out.data[5] =  math_map((double)map.rt, -32767.0 + GAP_CTL, 32767.0, 0.0, 1.0);
+        msg_out.data[6] =  (int8_t)map.lb;
+        msg_out.data[7] =  (int8_t)map.rb;
+
+        msg_out.data[8] =  (int8_t)map.a;
+        msg_out.data[9] =  (int8_t)map.b;
+        msg_out.data[10] =  (int8_t)map.x;
+        msg_out.data[11] =  (int8_t)map.y;
+        
+        msg_out.data[12] =  (int8_t)math_map((double)-map.xx, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[13] =  (int8_t)math_map((double)-map.yy, -32767.0, 32767.0, -1.0, 1.0);
+
+        msg_out.data[14] =  (int8_t)map.start;
+        msg_out.data[15] =  (int8_t)map.back;
+        msg_out.data[16] =  (int8_t)map.home;
 
         mtx.unlock();
         sleep(0.01);
@@ -108,7 +119,7 @@ class JoyStickPublisher : public rclcpp::Node
     : Node("joy_stick_publisher"), count_(0)
     { 
       
-      msg_out.data.resize(15);
+      msg_out.data.resize(17);
       std::thread t1(joy_get);
       t1.detach();
 
