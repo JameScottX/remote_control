@@ -22,7 +22,8 @@
 #include "signal.h"
 #include <mutex> 
 
-#define GAP_CTL 2000
+#define GAP_CTL   2000
+#define LPF_RATIO 0.1
 
 using namespace std::chrono_literals;
 
@@ -32,6 +33,7 @@ xbox_map_t map;
 int len;  
 bool joy_get_flag = true;
 std_msgs::msg::Float32MultiArray msg_out;
+std_msgs::msg::Float32MultiArray msg_out_last;
 
 inline double math_limit(double val, double min_, double max_){
     // limited function
@@ -78,18 +80,29 @@ void joy_get(void) {
         
         mtx.lock();
 
-
         if (fabs(map.lx) < GAP_CTL) map.lx = 0.0;
         if (fabs(map.ly) < GAP_CTL) map.ly = 0.0;
         if (fabs(map.rx) < GAP_CTL) map.rx = 0.0;
         if (fabs(map.ry) < GAP_CTL) map.ry = 0.0;
 
-        msg_out.data[0] =  math_map((double)-map.lx, -32767.0, 32767.0, -1.0, 1.0);
-        msg_out.data[1] =  math_map((double)-map.ly, -32767.0, 32767.0, -1.0, 1.0);
-        msg_out.data[2] =  math_map((double)-map.rx, -32767.0, 32767.0, -1.0, 1.0);
-        msg_out.data[3] =  math_map((double)-map.ry, -32767.0, 32767.0, -1.0, 1.0);
-        msg_out.data[4] =  math_map((double)map.lt, -32767.0 + GAP_CTL, 32767.0, 0.0, 1.0);
-        msg_out.data[5] =  math_map((double)map.rt, -32767.0 + GAP_CTL, 32767.0, 0.0, 1.0);
+        double data0 =  math_map((double)-map.lx, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[0] =  LPF_RATIO * data0 + (1-LPF_RATIO) *  msg_out_last.data[0];
+
+        double data1 =  math_map((double)-map.ly, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[1] =  LPF_RATIO * data1 + (1-LPF_RATIO) *  msg_out_last.data[1];
+
+        double data2 =  math_map((double)-map.rx, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[2] =  LPF_RATIO * data2 + (1-LPF_RATIO) *  msg_out_last.data[2];
+
+        double data3 =  math_map((double)-map.ry, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[3] =  LPF_RATIO * data3 + (1-LPF_RATIO) *  msg_out_last.data[3];
+
+        double data4 =  math_map((double)map.lt, -32767.0 + GAP_CTL, 32767.0, 0.0, 1.0);
+        msg_out.data[4] =  LPF_RATIO * data4 + (1-LPF_RATIO) *  msg_out_last.data[4];
+
+        double data5 =  math_map((double)map.rt, -32767.0 + GAP_CTL, 32767.0, 0.0, 1.0);
+        msg_out.data[5] =  LPF_RATIO * data5 + (1-LPF_RATIO) *  msg_out_last.data[5];
+
         msg_out.data[6] =  (int8_t)map.lb;
         msg_out.data[7] =  (int8_t)map.rb;
 
@@ -98,12 +111,17 @@ void joy_get(void) {
         msg_out.data[10] =  (int8_t)map.x;
         msg_out.data[11] =  (int8_t)map.y;
         
-        msg_out.data[12] =  (int8_t)math_map((double)-map.xx, -32767.0, 32767.0, -1.0, 1.0);
-        msg_out.data[13] =  (int8_t)math_map((double)-map.yy, -32767.0, 32767.0, -1.0, 1.0);
+        double data12 =  (int8_t)math_map((double)-map.xx, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[12] =  LPF_RATIO * data12 + (1-LPF_RATIO) *  msg_out_last.data[12];
+
+        double data13 =  (int8_t)math_map((double)-map.yy, -32767.0, 32767.0, -1.0, 1.0);
+        msg_out.data[13] =  LPF_RATIO * data13 + (1-LPF_RATIO) *  msg_out_last.data[13];
 
         msg_out.data[14] =  (int8_t)map.start;
         msg_out.data[15] =  (int8_t)map.back;
         msg_out.data[16] =  (int8_t)map.home;
+
+        msg_out_last = msg_out;
 
         mtx.unlock();
         sleep(0.01);
@@ -120,6 +138,11 @@ class JoyStickPublisher : public rclcpp::Node
     { 
       
       msg_out.data.resize(17);
+      msg_out_last.data.resize(17);
+      for(int i=0; i<17; ++i){
+        msg_out_last.data[i] = 0;
+      }
+
       std::thread t1(joy_get);
       t1.detach();
 
