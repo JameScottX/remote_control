@@ -23,7 +23,7 @@
 #include <mutex> 
 
 #define GAP_CTL   2000
-#define LPF_RATIO 0.1
+#define LPF_RATIO 0.99
 
 using namespace std::chrono_literals;
 
