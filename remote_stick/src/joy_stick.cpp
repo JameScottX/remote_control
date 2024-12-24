@@ -86,16 +86,16 @@ void joy_get(void) {
         if (fabs(map.ry) < GAP_CTL) map.ry = 0.0;
 
         double data0 =  math_map((double)-map.lx, -32767.0, 32767.0, -1.0, 1.0);
-        msg_out.data[0] =  LPF_RATIO * data0 + (1-LPF_RATIO) *  msg_out_last.data[0];
+        msg_out.data[1] =  LPF_RATIO * data0 + (1-LPF_RATIO) *  msg_out_last.data[1];
 
         double data1 =  math_map((double)-map.ly, -32767.0, 32767.0, -1.0, 1.0);
-        msg_out.data[1] =  LPF_RATIO * data1 + (1-LPF_RATIO) *  msg_out_last.data[1];
+        msg_out.data[0] =  LPF_RATIO * data1 + (1-LPF_RATIO) *  msg_out_last.data[0];
 
         double data2 =  math_map((double)-map.rx, -32767.0, 32767.0, -1.0, 1.0);
-        msg_out.data[2] =  LPF_RATIO * data2 + (1-LPF_RATIO) *  msg_out_last.data[2];
+        msg_out.data[3] =  LPF_RATIO * data2 + (1-LPF_RATIO) *  msg_out_last.data[3];
 
         double data3 =  math_map((double)-map.ry, -32767.0, 32767.0, -1.0, 1.0);
-        msg_out.data[3] =  LPF_RATIO * data3 + (1-LPF_RATIO) *  msg_out_last.data[3];
+        msg_out.data[2] =  LPF_RATIO * data3 + (1-LPF_RATIO) *  msg_out_last.data[2];
 
         double data4 =  math_map((double)map.lt, -32767.0 + GAP_CTL, 32767.0, 0.0, 1.0);
         msg_out.data[4] =  LPF_RATIO * data4 + (1-LPF_RATIO) *  msg_out_last.data[4];
@@ -157,8 +157,8 @@ class JoyStickPublisher : public rclcpp::Node
 
       RCLCPP_INFO_THROTTLE(this->get_logger(),
                      clk,
-                     1000,
-                     "joy_stick %f %f", msg_out.data[0], msg_out.data[1]);
+                     2000,
+                     "joy_stick %f %f %f %f", msg_out.data[0], msg_out.data[1], msg_out.data[2], msg_out.data[3]);
 
       mtx.lock();
       publisher_->publish(msg_out);
