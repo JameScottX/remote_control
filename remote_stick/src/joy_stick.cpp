@@ -146,7 +146,10 @@ class JoyStickPublisher : public rclcpp::Node
       std::thread t1(joy_get);
       t1.detach();
 
-      publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("joy_stick_topic", 100);
+      auto qos = rclcpp::QoS(rclcpp::KeepLast(10))
+                    .reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT)
+                    .durability(RMW_QOS_POLICY_DURABILITY_VOLATILE);
+      publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("joy_stick_topic", qos);
       timer_ = this->create_wall_timer(
       10ms, std::bind(&JoyStickPublisher::timer_callback, this));
     }
